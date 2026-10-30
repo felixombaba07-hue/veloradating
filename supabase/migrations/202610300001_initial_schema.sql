@@ -78,6 +78,21 @@ ALTER TABLE public.matches
 CREATE UNIQUE INDEX IF NOT EXISTS matches_user_pair_unique
   ON public.matches(user_one, user_two);
 
+DO $
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.matches'::regclass AND conname='matches_user_one_profiles_fkey') THEN
+    ALTER TABLE public.matches ADD CONSTRAINT matches_user_one_profiles_fkey
+      FOREIGN KEY (user_one) REFERENCES public.profiles(id) ON DELETE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.matches'::regclass AND conname='matches_user_two_profiles_fkey') THEN
+    ALTER TABLE public.matches ADD CONSTRAINT matches_user_two_profiles_fkey
+      FOREIGN KEY (user_two) REFERENCES public.profiles(id) ON DELETE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.matches'::regclass AND conname='matches_user_pair_order_check') THEN
+    ALTER TABLE public.matches ADD CONSTRAINT matches_user_pair_order_check CHECK (user_one < user_two);
+  END IF;
+END $;
+
 create table if not exists public.blocks (
   blocker_id uuid not null references public.profiles(id) on delete cascade,
   blocked_id uuid not null references public.profiles(id) on delete cascade,
