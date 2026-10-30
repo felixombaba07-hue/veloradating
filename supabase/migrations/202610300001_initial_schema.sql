@@ -22,7 +22,19 @@ create table if not exists public.profiles (
 -- Upgrade compatibility: CREATE TABLE IF NOT EXISTS does not add columns
 -- when an older profiles table already exists in this Supabase project.
 ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS date_of_birth date;
+  ADD COLUMN IF NOT EXISTS date_of_birth date,
+  ADD COLUMN IF NOT EXISTS display_name text NOT NULL DEFAULT 'Member',
+  ADD COLUMN IF NOT EXISTS gender text NOT NULL DEFAULT 'prefer_not_to_say',
+  ADD COLUMN IF NOT EXISTS country text NOT NULL DEFAULT 'Kenya',
+  ADD COLUMN IF NOT EXISTS city text,
+  ADD COLUMN IF NOT EXISTS bio text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS interests text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS avatar_url text,
+  ADD COLUMN IF NOT EXISTS gallery_urls text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS is_verified boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
 create table if not exists public.likes (
   id uuid primary key default gen_random_uuid(),
