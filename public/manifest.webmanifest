@@ -1,0 +1,10 @@
+{
+  "name": "VELORA",
+  "short_name": "VELORA",
+  "description": "Meaningful connections begin here.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#100b15",
+  "theme_color": "#100b15",
+  "icons": [{ "src": "/velora-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
