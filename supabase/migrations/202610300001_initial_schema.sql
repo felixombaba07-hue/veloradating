@@ -48,7 +48,7 @@ ALTER TABLE public.matches
   ADD COLUMN IF NOT EXISTS user_one uuid,
   ADD COLUMN IF NOT EXISTS user_two uuid;
 
-DO $
+DO $compat$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.columns
@@ -64,7 +64,7 @@ BEGIN
     ALTER TABLE public.matches ALTER COLUMN user_a DROP NOT NULL;
     ALTER TABLE public.matches ALTER COLUMN user_b DROP NOT NULL;
   END IF;
-END $;
+END $compat$;
 
 UPDATE public.matches
 SET user_one = COALESCE(user_one, user_two),
@@ -78,7 +78,7 @@ ALTER TABLE public.matches
 CREATE UNIQUE INDEX IF NOT EXISTS matches_user_pair_unique
   ON public.matches(user_one, user_two);
 
-DO $
+DO $compat$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.matches'::regclass AND conname='matches_user_one_profiles_fkey') THEN
     ALTER TABLE public.matches ADD CONSTRAINT matches_user_one_profiles_fkey
@@ -91,7 +91,7 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.matches'::regclass AND conname='matches_user_pair_order_check') THEN
     ALTER TABLE public.matches ADD CONSTRAINT matches_user_pair_order_check CHECK (user_one < user_two);
   END IF;
-END $;
+END $compat$;
 
 create table if not exists public.blocks (
   blocker_id uuid not null references public.profiles(id) on delete cascade,
