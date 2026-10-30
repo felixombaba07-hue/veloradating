@@ -42,6 +42,42 @@ create table if not exists public.matches (
   unique(user_one,user_two)
 );
 
+-- Compatibility with an older matches table that used user_a/user_b.
+-- Keep the app's canonical user_one/user_two fields populated from old rows.
+ALTER TABLE public.matches
+  ADD COLUMN IF NOT EXISTS user_one uuid,
+  ADD COLUMN IF NOT EXISTS user_two uuid;
+
+DO $
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='matches' AND column_name='user_a'
+  ) AND EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='matches' AND column_name='user_b'
+  ) THEN
+    UPDATE public.matches
+    SET user_one = COALESCE(user_one, LEAST(user_a, user_b)),
+        user_two = COALESCE(user_two, GREATEST(user_a, user_b));
+    -- Old required columns must not block inserts using the new column names.
+    ALTER TABLE public.matches ALTER COLUMN user_a DROP NOT NULL;
+    ALTER TABLE public.matches ALTER COLUMN user_b DROP NOT NULL;
+  END IF;
+END $;
+
+UPDATE public.matches
+SET user_one = COALESCE(user_one, user_two),
+    user_two = COALESCE(user_two, user_one)
+WHERE user_one IS NULL OR user_two IS NULL;
+
+ALTER TABLE public.matches
+  ALTER COLUMN user_one SET NOT NULL,
+  ALTER COLUMN user_two SET NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS matches_user_pair_unique
+  ON public.matches(user_one, user_two);
+
 create table if not exists public.blocks (
   blocker_id uuid not null references public.profiles(id) on delete cascade,
   blocked_id uuid not null references public.profiles(id) on delete cascade,
