@@ -1,38 +1,56 @@
 # VELORA
 
-VELORA is a mobile-first, adults-only social discovery and dating app starter. It uses a dark plum interface, pink neon accents, and a custom V mark.
+VELORA is a mobile-first adult-only social discovery application. The frontend is React + Vite; Supabase provides authentication, Postgres data, row-level security, and realtime chat.
 
-## Current build
+## Implemented in this repository
 
-- Responsive discovery dashboard and profile cards
-- Strict 18+ date-of-birth entry gate (client-side preview gate only; production enforcement must be server-side)
-- Interest filters, profile search, like/pass preview interactions
-- Matches, Messages, Gifts, and VIP navigation placeholders
-- Custom SVG brand icon and installable PWA manifest
-- No fake authentication, payments, messages, or user records
+- Supabase email/password sign-up and sign-in flow
+- Database-triggered 18+ date-of-birth eligibility check before a profile is created
+- Profile editing and database-backed profile discovery
+- Like/pass actions and automatic mutual-match creation
+- Match-scoped realtime messaging
+- Wallet, gifts, payment-order, and VIP database foundations
+- Private birth dates: discovery returns age only
+- Responsive layout and PWA branding
 
-## Run locally
+## Required setup
+
+1. Create or select a Supabase project.
+2. In the Supabase SQL Editor, run migrations in order:
+   - `supabase/migrations/202610300001_initial_schema.sql`
+   - `supabase/migrations/202610300002_private_birth_dates.sql`
+3. In the Vercel project settings, add:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY` (Supabase publishable/anon key)
+4. Redeploy the Vite app.
+5. In Supabase Auth, configure the production site URL, allowed redirect URLs, email confirmation, and SMTP sender.
+6. Configure Supabase Storage buckets and policies before enabling profile photo uploads.
+7. Configure Paystack only through server-side Supabase Edge Functions and secrets. Never put a Paystack secret key in a VITE_ variable.
+
+Copy `.env.example` to `.env.local` for local development.
+
+## Local development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Create a production build with `npm run build`.
+Production build:
 
-## Production services still to connect
+```bash
+npm run build
+```
 
-This repository is the first UI foundation, not a production dating service yet. Before public launch, connect and test:
+## Important safety and launch requirements
 
-1. Supabase Auth, Postgres, Storage, and Realtime.
-2. Server-enforced 18+ eligibility, age verification policy, and account moderation.
-3. Row-level security for profiles, likes, matches, messages, blocks, reports, and wallet records.
-4. Paystack server-side initialization, signature-verified webhooks, payment verification, and idempotent coin ledger updates.
-5. Secure media upload rules, rate limits, privacy controls, and admin moderation.
-6. A real messaging/calling provider if voice or video calling is enabled.
+- The database rejects account creation when the submitted date of birth indicates an age under 18. A date-of-birth check is not identity verification; obtain and integrate a lawful age-assurance process before public launch.
+- Do not enable access for minors. The service must remain 18+.
+- Do not use sample/fabricated member profiles. Discovery reads real rows from Supabase.
+- Paystack checkout, gift transfers, coin purchases/redemptions, VIP billing, voice/video calling, moderation tooling, and account deletion are not yet live. The interface deliberately does not claim these actions succeeded.
+- Configure storage access, abuse reporting, blocking review, rate limits, privacy/legal documents, and moderation operations before launch.
+- Test RLS policies using separate test accounts and verify email confirmation, password recovery, account deletion, and realtime authorization before production.
 
-Never put Supabase service-role or Paystack secret keys in browser code. Copy environment values from your own provider dashboards into local environment files or deployment secrets. Do not commit secrets.
+## Deployment status
 
-## Important
-
-The date-of-birth gate currently improves the preview experience only. A client-side check can be bypassed and is not sufficient for a real age-restricted service. Enforce eligibility on the server before allowing registration, discovery, or messaging. Do not launch until that and the security checklist above are complete.
+The repository contains the application code and migrations. A successful GitHub Actions build and a live deployment still need to be confirmed after environment configuration.
