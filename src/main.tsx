@@ -1,6 +1,7 @@
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Session } from '@supabase/supabase-js';
+import type { Session } from '@supabase/supabase-js';
 import { Heart, MessageCircle, Compass, Gift, Crown, LogOut, ShieldCheck, Search, Send, UserCircle, Wallet, RefreshCw } from 'lucide-react';
 import { supabase, supabaseConfigured } from './lib/supabase';
 import './style.css';
@@ -69,11 +70,12 @@ function App(){
   if(error){tell(error.message);return;}setMessages(data||[]);
  }
  useEffect(()=>{
-  if(!supabase||!selectedMatch)return;
-  const channel=supabase.channel('chat-'+selectedMatch.id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'match_id=eq.'+selectedMatch.id},payload=>{
+  const client=supabase;
+  if(!client||!selectedMatch)return;
+  const channel=client.channel('chat-'+selectedMatch.id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'match_id=eq.'+selectedMatch.id},payload=>{
    if(payload.eventType==='INSERT')setMessages(prev=>prev.some(x=>x.id===payload.new.id)?prev:[...prev,payload.new]);
   }).subscribe();
-  return()=>{supabase.removeChannel(channel);};
+  return()=>{void client.removeChannel(channel);};
  },[selectedMatch?.id]);
  async function sendMessage(e:FormEvent){
   e.preventDefault();if(!supabase||!session||!selectedMatch||!draft.trim())return;
