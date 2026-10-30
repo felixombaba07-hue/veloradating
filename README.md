@@ -10,6 +10,8 @@ VELORA is a mobile-first adult-only social discovery application. The frontend i
 - Like/pass actions and automatic mutual-match creation
 - Match-scoped realtime messaging
 - Wallet, gifts, payment-order, and VIP database foundations
+- Follow graph, profile visit, and abuse-report database foundations
+- Column-level profile permissions to prevent direct birth-date reads
 - Private birth dates: discovery returns age only
 - Responsive layout and PWA branding
 
@@ -19,6 +21,7 @@ VELORA is a mobile-first adult-only social discovery application. The frontend i
 2. In the Supabase SQL Editor, run migrations in order:
    - `supabase/migrations/202610300001_initial_schema.sql`
    - `supabase/migrations/202610300002_private_birth_dates.sql`
+   - `supabase/migrations/202610300003_security_social_foundations.sql`
 3. In the Vercel project settings, add:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY` (Supabase publishable/anon key)
