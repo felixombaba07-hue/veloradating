@@ -19,6 +19,11 @@ create table if not exists public.profiles (
   constraint gallery_limit check (cardinality(gallery_urls) <= 10)
 );
 
+-- Upgrade compatibility: CREATE TABLE IF NOT EXISTS does not add columns
+-- when an older profiles table already exists in this Supabase project.
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS date_of_birth date;
+
 create table if not exists public.likes (
   id uuid primary key default gen_random_uuid(),
   from_user uuid not null references public.profiles(id) on delete cascade,
